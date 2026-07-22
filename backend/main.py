@@ -2,17 +2,21 @@ from fastapi import FastAPI
 from database import engine
 from models import Base
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import Column, Integer, String
+from pydantic import BaseModel
+from fastapi import HTTPException
 from database import Base
 from database import engine, SessionLocal
 from models import Base, Product
-class Product(Base):
-    __tablename__ = "products"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    price = Column(Integer)
-    image = Column(String)
+class ProductCreate(BaseModel):
+    name: str
+    price: int
+    image: str
+
+
+class ProductUpdate(BaseModel):
+    name: str
+    price: int
 
 app = FastAPI()
 app.add_middleware(
@@ -65,3 +69,31 @@ def create_product():
     db.close()
 
     return {"message": "created"}
+@app.put("/products/{product_id}")
+def update_product(
+    product_id: int,
+    product_data: ProductUpdate
+):
+    db = SessionLocal()
+
+    product = db.query(Product).filter(
+        Product.id == product_id
+    ).first()
+
+    if not product:
+        db.close()
+        raise HTTPException(status_code=404)
+
+    product.name = product_data.name
+    product.price = product_data.price
+
+    db.commit()
+
+    db.refresh(product)
+
+    db.close()
+
+    return {
+        "message": "updated",
+        "id": product.id,
+    }

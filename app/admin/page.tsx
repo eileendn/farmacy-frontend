@@ -1,64 +1,190 @@
 "use client";
+import { useState, useEffect } from "react";
 
-import { useState } from "react";
-import { products } from "@/app/data/products";
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+};
 
 export default function AdminPage() {
-const [name, setName] = useState("");
-const [price, setPrice] = useState("");
-const [items, setItems] = useState(products);
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [items, setItems] = useState<Product[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editPrice, setEditPrice] = useState("");
 
-const addProduct = () => {
-  if (!name || !price) return;
+  useEffect(() => {
+  fetch("http://127.0.0.1:8000/products")
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("PRODUCTS:", data);
+      setItems(data || []);
+    });
+}, []);
 
-  const newProduct = {
-    id: Date.now(),
-    name,
-    price: Number(price),
-    image: "/products/vitaminD.jpg",
+
+  const addProduct = async () => {
+    if (!name || !price) return;
+
+    const res = await fetch(
+      "http://127.0.0.1:8000/products",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          price: Number(price),
+          image: "/hero.jpg",
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    console.log(data);
+
+    alert("محصول اضافه شد");
+    const updatedProducts = await fetch(
+    "http://127.0.0.1:8000/products"
+    );
+
+const productsData = await updatedProducts.json();
+
+setItems(productsData);
+    setName("");
+    setPrice("");
   };
 
-  setItems((prev) => [...prev, newProduct]);
+  const deleteProduct = async (id: number) => {
+  await fetch(
+    `http://127.0.0.1:8000/products/${id}`,
+    {
+      method: "DELETE",
+    }
+  );
 
-  setName("");
-  setPrice("");
-};
-const deleteProduct = (id: number) => {
   setItems((prev) =>
     prev.filter((product) => product.id !== id)
   );
+};
+
+const editProduct = async (id: number) => {
+  await fetch(
+    `http://127.0.0.1:8000/products/${id}`,
+    {
+      method: "PUT",
+    }
+  );
+
+  alert("محصول ویرایش شد");
+};
+console.log(items);
+const startEdit = (product: Product) => {
+  setEditingId(product.id);
+  setEditName(product.name);
+  setEditPrice(product.price.toString());
+};
+const saveEdit = async () => {
+  if (!editingId) return;
+
+  await fetch(
+    `http://127.0.0.1:8000/products/${editingId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: editName,
+        price: Number(editPrice),
+      }),
+    }
+  );
+
+  const updatedProducts = await fetch(
+    "http://127.0.0.1:8000/products"
+  );
+
+  const productsData = await updatedProducts.json();
+
+  setItems(productsData);
+
+  setEditingId(null);
 };
   return (
     <div className="p-10">
       <h1 className="mb-8 text-3xl font-bold">
         پنل مدیریت
       </h1>
-<div className="mb-8 space-y-3">
-  <input
-    type="text"
-    placeholder="نام محصول"
-    value={name}
-    onChange={(e) => setName(e.target.value)}
-    className="w-full rounded border p-3"
-  />
 
-  <input
-    type="number"
-    placeholder="قیمت"
-    value={price}
-    onChange={(e) => setPrice(e.target.value)}
-    className="w-full rounded border p-3"
-  />
+      <div className="mb-8 space-y-3">
+        <input
+          type="text"
+          placeholder="نام محصول"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full rounded border p-3"
+        />
 
-  <button
-    onClick={addProduct}
-    className="rounded bg-green-600 px-4 py-2 text-white"
-  >
-    افزودن محصول
-  </button>
-</div>
+        <input
+          type="number"
+          placeholder="قیمت"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          className="w-full rounded border p-3"
+        />
+
+        <button
+          onClick={addProduct}
+          className="rounded bg-green-600 px-4 py-2 text-white"
+        >
+          افزودن محصول
+        </button>
+      </div>
+{editingId && (
+  <div className="mb-8 rounded border p-4">
+    <h2 className="mb-4 text-xl font-bold">
+      ویرایش محصول
+    </h2>
+
+    <input
+      type="text"
+      value={editName}
+      onChange={(e) => setEditName(e.target.value)}
+      className="mb-3 w-full rounded border p-3"
+    />
+
+    <input
+      type="number"
+      value={editPrice}
+      onChange={(e) => setEditPrice(e.target.value)}
+      className="mb-3 w-full rounded border p-3"
+    />
+
+    <div className="flex gap-3">
+      <button
+        onClick={saveEdit}
+        className="rounded bg-blue-600 px-4 py-2 text-white"
+      >
+        ذخیره
+      </button>
+
+      <button
+        onClick={() => setEditingId(null)}
+        className="rounded bg-gray-500 px-4 py-2 text-white"
+      >
+        انصراف
+      </button>
+    </div>
+  </div>
+)}
       <div className="space-y-4">
-        {items.map((product) => (
+        {items?.map((product) => (
           <div
             key={product.id}
             className="flex items-center justify-between rounded border p-4"
@@ -74,12 +200,20 @@ const deleteProduct = (id: number) => {
             </div>
 
             <button
-               onClick={() => deleteProduct(product.id)}
-               className="rounded bg-red-500 px-4 py-2 text-white"
+              onClick={() => deleteProduct(product.id)}
+              className="rounded bg-red-500 px-4 py-2 text-white"
             >
-               حذف
+              حذف
+            
             </button>
+            <button
+  onClick={() => startEdit(product)}
+  className="rounded bg-blue-500 px-4 py-2 text-white"
+>
+  ویرایش
+</button>
           </div>
+          
         ))}
       </div>
     </div>
