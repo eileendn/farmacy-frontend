@@ -144,3 +144,23 @@ def create_order(order_data: OrderCreate):
         "message": "order created",
         "id": order.id,
     }
+@app.get("/orders")
+def get_orders():
+    db = SessionLocal()
+
+    orders = db.query(Order).all()
+
+    result = []
+
+    for order in orders:
+        result.append({
+            "id": order.id,
+            "customer_name": order.customer_name,
+            "phone": order.phone,
+            "address": order.address,
+            "total_price": order.total_price,
+        })
+
+    db.close()
+
+    return result
