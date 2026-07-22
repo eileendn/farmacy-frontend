@@ -1,5 +1,7 @@
 "use client";
+
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 type Product = {
   id: number;
@@ -16,43 +18,54 @@ export default function AdminPage() {
   const [editName, setEditName] = useState("");
   const [editPrice, setEditPrice] = useState("");
   const [selectedFile, setSelectedFile] =
-  useState<File | null>(null);
-  useEffect(() => {
-  fetch("http://127.0.0.1:8000/products")
-    .then((res) => res.json())
-    .then((data) => {
-      console.log("PRODUCTS:", data);
-      setItems(data || []);
-    });
-}, []);
+    useState<File | null>(null);
 
+  const router = useRouter();
+
+  useEffect(() => {
+    const isLoggedIn =
+      localStorage.getItem("admin_logged_in");
+
+    if (!isLoggedIn) {
+      router.push("/admin/login");
+      return;
+    }
+
+    fetch("http://127.0.0.1:8000/products")
+      .then((res) => res.json())
+      .then((data) => {
+        setItems(data || []);
+      });
+  }, [router]);
 
   const addProduct = async () => {
     if (!name || !price) return;
-let imageUrl = "/hero.jpg";
 
-if (selectedFile) {
-  const formData = new FormData();
+    let imageUrl = "/hero.jpg";
 
-  formData.append(
-    "file",
-    selectedFile
-  );
+    if (selectedFile) {
+      const formData = new FormData();
 
-  const uploadResponse = await fetch(
-    "http://127.0.0.1:8000/upload",
-    {
-      method: "POST",
-      body: formData,
+      formData.append(
+        "file",
+        selectedFile
+      );
+
+      const uploadResponse = await fetch(
+        "http://127.0.0.1:8000/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const uploadData =
+        await uploadResponse.json();
+
+      imageUrl = uploadData.image_url;
     }
-  );
 
-  const uploadData =
-    await uploadResponse.json();
-
-  imageUrl = uploadData.image_url;
-}
-    const res = await fetch(
+    await fetch(
       "http://127.0.0.1:8000/products",
       {
         method: "POST",
@@ -67,90 +80,102 @@ if (selectedFile) {
       }
     );
 
-    const data = await res.json();
-
-    console.log(data);
-
-    alert("محصول اضافه شد");
     const updatedProducts = await fetch(
-    "http://127.0.0.1:8000/products"
+      "http://127.0.0.1:8000/products"
     );
 
-const productsData = await updatedProducts.json();
+    const productsData =
+      await updatedProducts.json();
 
-setItems(productsData);
+    setItems(productsData);
+
     setName("");
     setPrice("");
+    setSelectedFile(null);
   };
 
   const deleteProduct = async (id: number) => {
-  await fetch(
-    `http://127.0.0.1:8000/products/${id}`,
-    {
-      method: "DELETE",
-    }
-  );
+    await fetch(
+      `http://127.0.0.1:8000/products/${id}`,
+      {
+        method: "DELETE",
+      }
+    );
 
-  setItems((prev) =>
-    prev.filter((product) => product.id !== id)
-  );
-};
+    setItems((prev) =>
+      prev.filter(
+        (product) => product.id !== id
+      )
+    );
+  };
 
-const editProduct = async (id: number) => {
-  await fetch(
-    `http://127.0.0.1:8000/products/${id}`,
-    {
-      method: "PUT",
-    }
-  );
+  const startEdit = (product: Product) => {
+    setEditingId(product.id);
+    setEditName(product.name);
+    setEditPrice(product.price.toString());
+  };
 
-  alert("محصول ویرایش شد");
-};
-console.log(items);
-const startEdit = (product: Product) => {
-  setEditingId(product.id);
-  setEditName(product.name);
-  setEditPrice(product.price.toString());
-};
-const saveEdit = async () => {
-  if (!editingId) return;
+  const saveEdit = async () => {
+    if (!editingId) return;
 
-  await fetch(
-    `http://127.0.0.1:8000/products/${editingId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: editName,
-        price: Number(editPrice),
-      }),
-    }
-  );
+    await fetch(
+      `http://127.0.0.1:8000/products/${editingId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          name: editName,
+          price: Number(editPrice),
+        }),
+      }
+    );
 
-  const updatedProducts = await fetch(
-    "http://127.0.0.1:8000/products"
-  );
+    const updatedProducts = await fetch(
+      "http://127.0.0.1:8000/products"
+    );
 
-  const productsData = await updatedProducts.json();
+    const productsData =
+      await updatedProducts.json();
 
-  setItems(productsData);
+    setItems(productsData);
 
-  setEditingId(null);
-};
+    setEditingId(null);
+  };
+
+  const logout = () => {
+    localStorage.removeItem(
+      "admin_logged_in"
+    );
+
+    router.push("/admin/login");
+  };
+
   return (
     <div className="p-10">
-      <h1 className="mb-8 text-3xl font-bold">
-        پنل مدیریت
-      </h1>
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="text-3xl font-bold">
+          پنل مدیریت
+        </h1>
+
+        <button
+          onClick={logout}
+          className="rounded bg-red-500 px-4 py-2 text-white"
+        >
+          خروج
+        </button>
+      </div>
 
       <div className="mb-8 space-y-3">
         <input
           type="text"
           placeholder="نام محصول"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) =>
+            setName(e.target.value)
+          }
           className="w-full rounded border p-3"
         />
 
@@ -158,7 +183,19 @@ const saveEdit = async () => {
           type="number"
           placeholder="قیمت"
           value={price}
-          onChange={(e) => setPrice(e.target.value)}
+          onChange={(e) =>
+            setPrice(e.target.value)
+          }
+          className="w-full rounded border p-3"
+        />
+
+        <input
+          type="file"
+          onChange={(e) =>
+            setSelectedFile(
+              e.target.files?.[0] || null
+            )
+          }
           className="w-full rounded border p-3"
         />
 
@@ -166,58 +203,56 @@ const saveEdit = async () => {
           onClick={addProduct}
           className="rounded bg-green-600 px-4 py-2 text-white"
         >
-
-        <input
-        type="file"
-        onChange={(e) =>
-        setSelectedFile(
-        e.target.files?.[0] || null
-        )
-        }
-  className="w-full rounded border p-3"
-/>   
           افزودن محصول
         </button>
       </div>
-{editingId && (
-  <div className="mb-8 rounded border p-4">
-    <h2 className="mb-4 text-xl font-bold">
-      ویرایش محصول
-    </h2>
 
-    <input
-      type="text"
-      value={editName}
-      onChange={(e) => setEditName(e.target.value)}
-      className="mb-3 w-full rounded border p-3"
-    />
+      {editingId && (
+        <div className="mb-8 rounded border p-4">
+          <h2 className="mb-4 text-xl font-bold">
+            ویرایش محصول
+          </h2>
 
-    <input
-      type="number"
-      value={editPrice}
-      onChange={(e) => setEditPrice(e.target.value)}
-      className="mb-3 w-full rounded border p-3"
-    />
+          <input
+            type="text"
+            value={editName}
+            onChange={(e) =>
+              setEditName(e.target.value)
+            }
+            className="mb-3 w-full rounded border p-3"
+          />
 
-    <div className="flex gap-3">
-      <button
-        onClick={saveEdit}
-        className="rounded bg-blue-600 px-4 py-2 text-white"
-      >
-        ذخیره
-      </button>
+          <input
+            type="number"
+            value={editPrice}
+            onChange={(e) =>
+              setEditPrice(e.target.value)
+            }
+            className="mb-3 w-full rounded border p-3"
+          />
 
-      <button
-        onClick={() => setEditingId(null)}
-        className="rounded bg-gray-500 px-4 py-2 text-white"
-      >
-        انصراف
-      </button>
-    </div>
-  </div>
-)}
+          <div className="flex gap-3">
+            <button
+              onClick={saveEdit}
+              className="rounded bg-blue-600 px-4 py-2 text-white"
+            >
+              ذخیره
+            </button>
+
+            <button
+              onClick={() =>
+                setEditingId(null)
+              }
+              className="rounded bg-gray-500 px-4 py-2 text-white"
+            >
+              انصراف
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="space-y-4">
-        {items?.map((product) => (
+        {items.map((product) => (
           <div
             key={product.id}
             className="flex items-center justify-between rounded border p-4"
@@ -232,21 +267,26 @@ const saveEdit = async () => {
               </p>
             </div>
 
-            <button
-              onClick={() => deleteProduct(product.id)}
-              className="rounded bg-red-500 px-4 py-2 text-white"
-            >
-              حذف
-            
-            </button>
-            <button
-  onClick={() => startEdit(product)}
-  className="rounded bg-blue-500 px-4 py-2 text-white"
->
-  ویرایش
-</button>
+            <div className="flex gap-2">
+              <button
+                onClick={() =>
+                  deleteProduct(product.id)
+                }
+                className="rounded bg-red-500 px-4 py-2 text-white"
+              >
+                حذف
+              </button>
+
+              <button
+                onClick={() =>
+                  startEdit(product)
+                }
+                className="rounded bg-blue-500 px-4 py-2 text-white"
+              >
+                ویرایش
+              </button>
+            </div>
           </div>
-          
         ))}
       </div>
     </div>
