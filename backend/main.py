@@ -6,15 +6,20 @@ from pydantic import BaseModel
 from fastapi import HTTPException
 from database import Base
 from database import engine, SessionLocal
-from models import Base, Product
+from models import Base, Product, Order
 from fastapi import UploadFile, File
 import shutil
 from fastapi.staticfiles import StaticFiles
+
 class ProductCreate(BaseModel):
     name: str
     price: int
     image: str
-
+class OrderCreate(BaseModel):
+    customer_name: str
+    phone: str
+    address: str
+    total_price: int
 
 class ProductUpdate(BaseModel):
     name: str
@@ -117,4 +122,25 @@ def upload_image(file: UploadFile = File(...)):
 
     return {
         "image_url": f"/uploads/{file.filename}"
+    }
+@app.post("/orders")
+def create_order(order_data: OrderCreate):
+    db = SessionLocal()
+
+    order = Order(
+        customer_name=order_data.customer_name,
+        phone=order_data.phone,
+        address=order_data.address,
+        total_price=order_data.total_price,
+    )
+
+    db.add(order)
+    db.commit()
+    db.refresh(order)
+
+    db.close()
+
+    return {
+        "message": "order created",
+        "id": order.id,
     }
