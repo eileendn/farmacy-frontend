@@ -7,7 +7,9 @@ from fastapi import HTTPException
 from database import Base
 from database import engine, SessionLocal
 from models import Base, Product
-
+from fastapi import UploadFile, File
+import shutil
+from fastapi.staticfiles import StaticFiles
 class ProductCreate(BaseModel):
     name: str
     price: int
@@ -25,6 +27,11 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+app.mount(
+    "/uploads",
+    StaticFiles(directory="uploads"),
+    name="uploads"
 )
 Base.metadata.create_all(bind=engine)
 
@@ -54,21 +61,25 @@ def get_products():
 
     return result
 @app.post("/products")
-def create_product():
+def create_product(product_data: ProductCreate):
     db = SessionLocal()
 
     product = Product(
-        name="محصول تستی",
-        price=100000,
-        image="/hero.jpg"
+        name=product_data.name,
+        price=product_data.price,
+        image=product_data.image,
     )
 
     db.add(product)
     db.commit()
+    db.refresh(product)
 
     db.close()
 
-    return {"message": "created"}
+    return {
+        "message": "created",
+        "id": product.id,
+    }
 @app.put("/products/{product_id}")
 def update_product(
     product_id: int,
@@ -96,4 +107,14 @@ def update_product(
     return {
         "message": "updated",
         "id": product.id,
+    }
+@app.post("/upload")
+def upload_image(file: UploadFile = File(...)):
+    file_path = f"uploads/{file.filename}"
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    return {
+        "image_url": f"/uploads/{file.filename}"
     }

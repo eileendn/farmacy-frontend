@@ -15,7 +15,8 @@ export default function AdminPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [editPrice, setEditPrice] = useState("");
-
+  const [selectedFile, setSelectedFile] =
+  useState<File | null>(null);
   useEffect(() => {
   fetch("http://127.0.0.1:8000/products")
     .then((res) => res.json())
@@ -28,7 +29,29 @@ export default function AdminPage() {
 
   const addProduct = async () => {
     if (!name || !price) return;
+let imageUrl = "/hero.jpg";
 
+if (selectedFile) {
+  const formData = new FormData();
+
+  formData.append(
+    "file",
+    selectedFile
+  );
+
+  const uploadResponse = await fetch(
+    "http://127.0.0.1:8000/upload",
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  const uploadData =
+    await uploadResponse.json();
+
+  imageUrl = uploadData.image_url;
+}
     const res = await fetch(
       "http://127.0.0.1:8000/products",
       {
@@ -39,7 +62,7 @@ export default function AdminPage() {
         body: JSON.stringify({
           name,
           price: Number(price),
-          image: "/hero.jpg",
+          image: imageUrl,
         }),
       }
     );
@@ -143,6 +166,16 @@ const saveEdit = async () => {
           onClick={addProduct}
           className="rounded bg-green-600 px-4 py-2 text-white"
         >
+
+        <input
+        type="file"
+        onChange={(e) =>
+        setSelectedFile(
+        e.target.files?.[0] || null
+        )
+        }
+  className="w-full rounded border p-3"
+/>   
           افزودن محصول
         </button>
       </div>
