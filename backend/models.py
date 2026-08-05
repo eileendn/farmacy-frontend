@@ -19,3 +19,23 @@ class Order(Base):
     phone = Column(String)
     address = Column(String)
     total_price = Column(Integer)
+    status = Column(String, default="pending")
+class Admin(Base):
+    __tablename__ = "admins"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True,
+    )
+
+    username = Column(
+        String,
+        unique=True,
+        nullable=False,
+    )
+
+    password = Column(
+        String,
+        nullable=False,
+    )

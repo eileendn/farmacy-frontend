@@ -17,7 +17,7 @@ export default function Navbar() {
     <nav className="flex flex-col gap-4 border-b px-4 py-4 md:flex-row md:items-center md:justify-between">
       <Link href="/">
         <h1 className="text-2xl font-bold text-green-600 cursor-pointer">
-           داروخانه آنلاین
+           داروخانه دکترامدادیان
         </h1>
       </Link>
 

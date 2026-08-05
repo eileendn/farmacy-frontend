@@ -4,7 +4,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-7xl gap-8 p-10 md:grid-cols-3">
         <div>
           <h2 className="mb-4 text-xl font-bold">
-            داروخانه آنلاین
+            داروخانه دکتر امدادیان
           </h2>
 
           <p className="text-gray-300">
@@ -34,7 +34,7 @@ export default function Footer() {
           <ul className="space-y-2 text-gray-300">
             <li>📞 09902151693</li>
             <li>📧 info@pharmacy.com</li>
-            <li>📍Miyaneh</li>
+            <li>📍Zanjan</li>
           </ul>
         </div>
       </div>
