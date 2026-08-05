@@ -9,20 +9,34 @@ export default function AdminLoginPage() {
 
   const router = useRouter();
 
-  const login = () => {
-    if (
-      username === "admin" &&
-      password === "123456"
-    ) {
-      localStorage.setItem(
-        "admin_logged_in",
-        "true"
-      );
+  const handleLogin = async () => {
+    const res = await fetch(
+      "http://127.0.0.1:8000/login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      }
+    );
 
-      router.push("/admin");
-    } else {
-      alert("نام کاربری یا رمز عبور اشتباه است");
+    if (!res.ok) {
+      alert("نام کاربری یا رمز اشتباه است");
+      return;
     }
+
+    const data = await res.json();
+
+    localStorage.setItem(
+      "access_token",
+      data.access_token
+    );
+
+    router.push("/admin");
   };
 
   return (
@@ -53,7 +67,7 @@ export default function AdminLoginPage() {
         />
 
         <button
-          onClick={login}
+          onClick={handleLogin}
           className="w-full rounded bg-green-600 py-3 text-white"
         >
           ورود

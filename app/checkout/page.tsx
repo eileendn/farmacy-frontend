@@ -8,9 +8,9 @@ export default function CheckoutPage() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
 
-  const { clearCart } = useCart();
+  const { items, clearCart } = useCart();
 
-  const handleSubmit = (
+  const handleSubmit = async (
     e: React.FormEvent
   ) => {
     e.preventDefault();
@@ -35,9 +35,30 @@ export default function CheckoutPage() {
       return;
     }
 
-    clearCart();
+   const totalPrice = items.reduce(
+  (sum, item) => sum + item.price,
+  0
+);
 
-    alert("سفارش با موفقیت ثبت شد");
+await fetch(
+  "http://127.0.0.1:8000/orders",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      customer_name: name,
+      phone,
+      address,
+      total_price: totalPrice,
+    }),
+  }
+);
+
+clearCart();
+
+alert("سفارش با موفقیت ثبت شد"); 
   };
 
   return (

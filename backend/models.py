@@ -10,3 +10,32 @@ class Product(Base):
     name = Column(String)
     price = Column(Integer)
     image = Column(String)
+
+class Order(Base):
+    __tablename__ = "orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    customer_name = Column(String)
+    phone = Column(String)
+    address = Column(String)
+    total_price = Column(Integer)
+    status = Column(String, default="pending")
+class Admin(Base):
+    __tablename__ = "admins"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True,
+    )
+
+    username = Column(
+        String,
+        unique=True,
+        nullable=False,
+    )
+
+    password = Column(
+        String,
+        nullable=False,
+    )

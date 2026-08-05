@@ -10,6 +10,15 @@ type Product = {
   image: string;
 };
 
+type Order = {
+  id: number;
+  customer_name: string;
+  phone: string;
+  address: string;
+  total_price: number;
+  status: string;
+};
+
 export default function AdminPage() {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
@@ -21,93 +30,119 @@ export default function AdminPage() {
     useState<File | null>(null);
 
   const router = useRouter();
-
+  const [orders, setOrders] = useState<Order[]>([]);
   useEffect(() => {
-    const isLoggedIn =
-      localStorage.getItem("admin_logged_in");
+  const token = localStorage.getItem("access_token");
 
-    if (!isLoggedIn) {
-      router.push("/admin/login");
-      return;
-    }
+  if (!token) {
+    router.push("/admin/login");
+    return;
+  }
 
-    fetch("http://127.0.0.1:8000/products")
-      .then((res) => res.json())
-      .then((data) => {
-        setItems(data || []);
-      });
-  }, [router]);
+  fetch("http://127.0.0.1:8000/products")
+    .then((res) => res.json())
+    .then((data) => {
+      setItems(data || []);
+    });
 
+  fetch("http://127.0.0.1:8000/orders", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then(async (res) => {
+      const data = await res.json();
+
+      console.log("STATUS:", res.status);
+      console.log("ORDERS:", data);
+
+      if (Array.isArray(data)) {
+        setOrders(data);
+      } else {
+        setOrders([]);
+      }
+    });
+}, [router]);
   const addProduct = async () => {
-    if (!name || !price) return;
+  if (!name || !price) return;
 
-    let imageUrl = "/hero.jpg";
+  const token = localStorage.getItem("access_token");
 
-    if (selectedFile) {
-      const formData = new FormData();
+  let imageUrl = "/hero.jpg";
 
-      formData.append(
-        "file",
-        selectedFile
-      );
+  if (selectedFile) {
+    const formData = new FormData();
 
-      const uploadResponse = await fetch(
-        "http://127.0.0.1:8000/upload",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+    formData.append("file", selectedFile);
 
-      const uploadData =
-        await uploadResponse.json();
-
-      imageUrl = uploadData.image_url;
-    }
-
-    await fetch(
-      "http://127.0.0.1:8000/products",
+    const uploadResponse = await fetch(
+      "http://127.0.0.1:8000/upload",
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          name,
-          price: Number(price),
-          image: imageUrl,
-        }),
+        body: formData,
       }
     );
 
-    const updatedProducts = await fetch(
-      "http://127.0.0.1:8000/products"
-    );
+    const uploadData = await uploadResponse.json();
 
-    const productsData =
-      await updatedProducts.json();
+    imageUrl = uploadData.image_url;
+  }
 
-    setItems(productsData);
+  await fetch(
+    "http://127.0.0.1:8000/products",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name,
+        price: Number(price),
+        image: imageUrl,
+      }),
+    }
+  );
 
-    setName("");
-    setPrice("");
-    setSelectedFile(null);
-  };
+  const updatedProducts = await fetch(
+    "http://127.0.0.1:8000/products",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
 
+  const productsData = await updatedProducts.json();
+
+  setItems(productsData);
+
+  setName("");
+  setPrice("");
+  setSelectedFile(null);
+};
   const deleteProduct = async (id: number) => {
-    await fetch(
-      `http://127.0.0.1:8000/products/${id}`,
-      {
-        method: "DELETE",
-      }
-    );
+  const token = localStorage.getItem("access_token");
 
-    setItems((prev) =>
-      prev.filter(
-        (product) => product.id !== id
-      )
-    );
-  };
+  await fetch(
+    `http://127.0.0.1:8000/products/${id}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  setItems((prev) =>
+    prev.filter(
+      (product) => product.id !== id
+    )
+  );
+};
 
   const startEdit = (product: Product) => {
     setEditingId(product.id);
@@ -116,23 +151,24 @@ export default function AdminPage() {
   };
 
   const saveEdit = async () => {
-    if (!editingId) return;
+  if (!editingId) return;
 
-    await fetch(
-      `http://127.0.0.1:8000/products/${editingId}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-        body: JSON.stringify({
-          name: editName,
-          price: Number(editPrice),
-        }),
-      }
-    );
+  const token = localStorage.getItem("access_token");
 
+  await fetch(
+    `http://127.0.0.1:8000/products/${editingId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name: editName,
+        price: Number(editPrice),
+      }),
+    }
+  );
     const updatedProducts = await fetch(
       "http://127.0.0.1:8000/products"
     );
@@ -144,15 +180,39 @@ export default function AdminPage() {
 
     setEditingId(null);
   };
+const updateOrderStatus = async (
+  orderId: number,
+  status: string
+) => {
+  const token = localStorage.getItem("access_token");
 
+  await fetch(
+    `http://127.0.0.1:8000/orders/${orderId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        status,
+      }),
+    }
+  );
+
+  setOrders((prev) =>
+    prev.map((order) =>
+      order.id === orderId
+        ? { ...order, status }
+        : order
+    )
+  );
+};
   const logout = () => {
-    localStorage.removeItem(
-      "admin_logged_in"
-    );
+  localStorage.removeItem("access_token");
 
-    router.push("/admin/login");
-  };
-
+  router.push("/admin/login");
+};
   return (
     <div className="p-10">
       <div className="mb-8 flex items-center justify-between">
@@ -289,6 +349,75 @@ export default function AdminPage() {
           </div>
         ))}
       </div>
+      <div className="mt-12">
+  <h2 className="mb-4 text-2xl font-bold">
+    سفارش‌ها
+  </h2>
+
+  <div className="space-y-4">
+    {orders.map((order) => (
+      <div
+        key={order.id}
+        className="rounded border p-4"
+      >
+        <p>
+          <strong>نام:</strong>{" "}
+          {order.customer_name}
+        </p>
+
+        <p>
+          <strong>موبایل:</strong>{" "}
+          {order.phone}
+        </p>
+
+        <p>
+          <strong>آدرس:</strong>{" "}
+          {order.address}
+        </p>
+
+        <p>
+          <strong>مبلغ:</strong>{" "}
+          {order.total_price.toLocaleString()}
+          {" "}تومان
+        </p>
+        <p className="mt-2">
+  <strong>وضعیت:</strong>
+</p>
+
+<select
+  value={order.status}
+  onChange={(e) =>
+    updateOrderStatus(
+      order.id,
+      e.target.value
+    )
+  }
+  className="mt-2 rounded border p-2"
+>
+  <option value="pending">
+    در انتظار
+  </option>
+
+  <option value="preparing">
+    در حال آماده‌سازی
+  </option>
+
+  <option value="sent">
+    ارسال شد
+  </option>
+
+  <option value="delivered">
+    تحویل شد
+  </option>
+</select>
+        <p>
+         <strong>وضعیت:</strong>{" "}
+         {order.status}
+        </p>
+      </div>
+    ))}
+  </div>
+</div>
     </div>
   );
 }
