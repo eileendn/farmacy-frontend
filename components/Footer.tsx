@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="mt-20 bg-gray-900 text-white">
+    <footer className="bg-[#3B5440] text-white">
       <div className="mx-auto grid max-w-7xl gap-8 p-10 md:grid-cols-3">
         <div>
           <h2 className="mb-4 text-xl font-bold">
@@ -34,7 +34,7 @@ export default function Footer() {
           <ul className="space-y-2 text-gray-300">
             <li>📞 09902151693</li>
             <li>📧 info@pharmacy.com</li>
-            <li>📍Miyaneh</li>
+            <li>📍miyaneh</li>
           </ul>
         </div>
       </div>

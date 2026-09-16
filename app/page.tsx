@@ -3,6 +3,16 @@ import { useEffect, useState } from "react";
 import ProductCard from "@/components/ProductCard";
 import Footer from "@/components/Footer";
 import HeroSlider from "@/components/HeroSlider";
+import {
+  Truck,
+  CalendarCheck,
+  Pill,
+  Dumbbell,
+  Venus,
+  Sun,
+  Droplets,
+  BookOpen,
+} from "lucide-react";
 
 type Product = {
   id: number;
@@ -34,64 +44,102 @@ const filteredProducts = products.filter(
 );
   return (
     <div>
-      <section className="bg-green-50">
-    <div className="mx-auto grid max-w-7xl items-center gap-10 px-10 py-20 md:grid-cols-2">
-
-    <div>
-  <h1 className="text-5xl font-bold leading-tight">
-    خرید آنلاین مکمل و
-    محصولات سلامت
-  </h1>
-
-  <p className="mt-6 text-lg text-gray-600">
-    انواع ویتامین‌ها، مکمل‌های ورزشی،
-    محصولات پوست و مو و بهداشت فردی
-    با ارسال سریع.
-  </p>
-
-  <div className="mt-8 flex gap-4">
-    <button className="rounded-lg bg-green-600 px-6 py-3 text-white hover:bg-green-700">
-      مشاهده محصولات
-    </button>
-
-    <button className="rounded-lg border px-6 py-3">
-      درباره ما
-    </button>
-  </div>
-</div>
-
-<div>
+<section className="bg-muted">
   <HeroSlider />
-</div>
-
-  </div>
 </section>
 
+<section className="bg-white px-6 py-10">
+  <div className="mx-auto max-w-7xl">
 
-<section className="px-10 py-8">
-  <h2 className="mb-6 text-3xl font-bold">
-    دسته‌بندی محصولات
-  </h2>
+    <h2 className="mb-8 text-right text-3xl font-bold">
+      دسته‌بندی محصولات
+    </h2>
 
-  <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-    <div className="cursor-pointer rounded-xl border p-6 text-center transition hover:bg-green-50 hover:shadow-lg">
-      💊
-      <p className="mt-2">ویتامین‌ها</p>
-    </div>
+    <div
+      dir="rtl"
+      className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-4 lg:grid-cols-8"
+    >
 
-    <div className="cursor-pointer rounded-xl border p-6 text-center transition hover:bg-green-50 hover:shadow-lg">
-      🏋️
-      <p className="mt-2">مکمل ورزشی</p>
-    </div>
+      {/* دارواکسپرس */}
+      <div className="group flex cursor-pointer flex-col items-center gap-3">
+        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#F7B818] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
+          <Truck className="h-12 w-12 text-white" strokeWidth={1.7} />
+        </div>
+        <p className="text-center font-semibold text-[#444]">
+          دارواکسپرس
+        </p>
+      </div>
 
-    <div className="cursor-pointer rounded-xl border p-6 text-center transition hover:bg-green-50 hover:shadow-lg">
-      ✨
-      <p className="mt-2">پوست و مو</p>
-    </div>
+      {/* پرداخت اقساطی */}
+      <div className="group flex cursor-pointer flex-col items-center gap-3">
+        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#466BB2] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
+          <CalendarCheck className="h-12 w-12 text-white" strokeWidth={1.7} />
+        </div>
+        <p className="text-center font-semibold text-[#444]">
+          پرداخت اقساطی
+        </p>
+      </div>
 
-    <div className="cursor-pointer rounded-xl border p-6 text-center transition hover:bg-green-50 hover:shadow-lg">
-      🧴
-      <p className="mt-2">بهداشت فردی</p>
+      {/* مکمل رژیمی غذایی */}
+      <div className="group flex cursor-pointer flex-col items-center gap-3">
+        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#F45124] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
+          <Pill className="h-12 w-12 text-white" strokeWidth={1.7} />
+        </div>
+        <p className="text-center font-semibold text-[#444]">
+          مکمل رژیمی غذایی
+        </p>
+      </div>
+
+      {/* مکمل بدنسازی */}
+      <div className="group flex cursor-pointer flex-col items-center gap-3">
+        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#27A9E0] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
+          <Dumbbell className="h-12 w-12 text-white" strokeWidth={1.7} />
+        </div>
+        <p className="text-center font-semibold text-[#444]">
+          مکمل بدنسازی
+        </p>
+      </div>
+
+      {/* محصولات بانوان */}
+      <div className="group flex cursor-pointer flex-col items-center gap-3">
+        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#E51058] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
+          <Venus className="h-12 w-12 text-white" strokeWidth={1.7} />
+        </div>
+        <p className="text-center font-semibold text-[#444]">
+          محصولات بانوان
+        </p>
+      </div>
+
+      {/* ضد آفتاب */}
+      <div className="group flex cursor-pointer flex-col items-center gap-3">
+        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#F68B1F] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
+          <Sun className="h-12 w-12 text-white" strokeWidth={1.7} />
+        </div>
+        <p className="text-center font-semibold text-[#444]">
+          ضد آفتاب
+        </p>
+      </div>
+
+      {/* ضد لک */}
+      <div className="group flex cursor-pointer flex-col items-center gap-3">
+        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#EC91BB] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
+          <Droplets className="h-12 w-12 text-white" strokeWidth={1.7} />
+        </div>
+        <p className="text-center font-semibold text-[#444]">
+          ضد لک
+        </p>
+      </div>
+
+      {/* مجله داروخانه */}
+      <div className="group flex cursor-pointer flex-col items-center gap-3">
+        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#98278F] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
+          <BookOpen className="h-12 w-12 text-white" strokeWidth={1.7} />
+        </div>
+        <p className="text-center font-semibold text-[#444]">
+          مجله داروخانه
+        </p>
+      </div>
+
     </div>
   </div>
 </section>

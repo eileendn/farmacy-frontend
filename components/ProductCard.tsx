@@ -15,28 +15,29 @@ export default function ProductCard({
   image,
 }: ProductCardProps) {
   const imageUrl = image.startsWith("/uploads")
-  ? `http://127.0.0.1:8000${image}`
-  : image;
+    ? `http://127.0.0.1:8000${image}`
+    : image;
+
   return (
     <Link href={`/products/${id}`}>
-      <div className="w-full max-w-xs rounded-lg border p-4 shadow-sm cursor-pointer transition duration-300 hover:scale-105 hover:shadow-xl">
+      <div className="w-full max-w-xs rounded-3xl border border-border/50 bg-card p-4 shadow-md shadow-black/5 cursor-pointer transition duration-300 hover:-translate-y-1 hover:shadow-lg">
         <Image
-        src={imageUrl}
-        alt="محصول"
-        width={300}
-        height={200}
-        className="mb-4 h-40 w-full rounded-xl object-cover"
+          src={imageUrl}
+          alt="محصول"
+          width={300}
+          height={200}
+          className="mb-4 h-40 w-full rounded-2xl object-cover"
         />
 
-        <h3 className="text-lg font-semibold">
+        <h3 className="text-base font-extrabold tracking-tight">
           {name}
         </h3>
 
-        <p className="mt-2 text-green-600">
+        <p className="mt-2 text-sm text-secondary-foreground font-medium">
           {price.toLocaleString()} تومان
         </p>
 
-        <button className="mt-4 w-full rounded-lg bg-green-600 py-2 text-white transition hover:bg-green-700">
+        <button className="mt-4 w-full rounded-full bg-primary py-2 text-primary-foreground text-sm font-semibold transition hover:bg-primary/90">
           خرید
         </button>
       </div>
