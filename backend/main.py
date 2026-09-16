@@ -21,6 +21,7 @@ class ProductCreate(BaseModel):
     name: str
     price: int
     image: str
+    category: str | None = None
 
     category: Optional[str] = None
     subcategory: Optional[str] = None
